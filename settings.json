@@ -1,0 +1,28 @@
+{
+    "preseason": true,
+    "decay_base": 0.9,
+    "horizon": 6,
+    "use_wc": null,
+    "use_ru": null,
+    "use_aa": null,
+    "use_dk": null,
+    "chip_limits": {},
+    "team_data": "ID",
+    "team_id": null,
+    "xmin_lb": 400,
+    "ev_per_price_cutoff": 30,
+    "solver": "highs",
+    "solver_path": "",
+    "delete_tmp": true,
+    "ft_value_list": {
+        "2": 2.5,
+        "3": 2.1,
+        "4": 1.8,
+        "5": 1.6
+    },
+    "solutions_file": "solutions.csv",
+    "show_summary": true,
+    "no_transfer_last_gws": 2,
+    "use_cmd": true,
+    "weekly_hit_limit": 1
+}
