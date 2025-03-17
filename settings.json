@@ -23,6 +23,6 @@
     "solutions_file": "solutions.csv",
     "show_summary": true,
     "no_transfer_last_gws": 2,
-    "use_cmd": true,
+    "use_cmd": false,
     "weekly_hit_limit": 1
 }
