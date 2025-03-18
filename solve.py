@@ -210,6 +210,7 @@ def solve_regular(runtime_options=None):
 
     # Detailed print
     for result in response:
+        print(result["summary"])
         picks = result["picks"]
         gws = picks["week"].unique()
         print(f"Solution {result['iter'] + 1}")
