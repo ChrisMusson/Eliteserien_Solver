@@ -5,3 +5,4 @@ __pycache__/
 *.sol
 *.opt
 *.mps
+*.png
