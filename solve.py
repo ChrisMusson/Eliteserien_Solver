@@ -11,6 +11,8 @@ import time
 import pandas as pd
 import requests
 
+from visualisation import create_squad_timeline
+
 BASE_URL = "https://fantasy.eliteserien.no/api"
 
 
@@ -188,6 +190,9 @@ def solve_regular(runtime_options=None):
         else:
             filename = f"{solve_name}_{stamp}_{run_id}_{iter}"
         result["picks"].to_csv("data/results/" + filename + ".csv")
+
+        if options.get("export_image", False):
+            create_squad_timeline(current_squad=data["initial_squad"], statistics=result["statistics"], picks=result["picks"], filename=filename)
 
     print("Result Summary")
     result_table = pd.DataFrame(response)
