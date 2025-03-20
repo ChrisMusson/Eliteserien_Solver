@@ -396,7 +396,6 @@ def solve_multi_period_fpl(data, options):
     type_data = data["type_data"]
     next_gw = data["next_gw"]
     initial_squad = data["initial_squad"]
-    initial_am_team = data["initial_am_team"]
     itb = data["itb"]
     fixtures = data["fixtures"]
     if preseason:
@@ -409,8 +408,6 @@ def solve_multi_period_fpl(data, options):
     players = merged_data.index.to_list()
     element_types = type_data.index.to_list()
     teams = team_data["name"].to_list()
-    teams_shorts = team_data["short_name"].to_list()
-    teams_extended = teams_shorts + ["dummy"]
     last_gw = next_gw + horizon - 1
     if last_gw > 38:
         last_gw = 38
@@ -420,19 +417,6 @@ def solve_multi_period_fpl(data, options):
     order = [0, 1, 2, 3]
     price_modified_players = data["price_modified_players"]
     ft_states = [0, 1, 2, 3, 4, 5]
-
-    team_short_dict = team_data.set_index("name")["short_name"].to_dict()
-
-    try:
-        am_df = pd.read_csv("data/am_pts.csv", na_values=["nan", "NaN"]).fillna(0)
-        am_pts_exists = True
-    except Exception:
-        am_df = pd.DataFrame([], columns=["team", "Price", "Manager"])
-        am_pts_exists = False
-    am_price = am_df.set_index("team")["Price"].to_dict()
-    am_price["dummy"] = 0
-    am_pts = {(row["team"], int(col.split("_")[0])): row[col] for _, row in am_df.iterrows() for col in am_df.columns if "_Pts" in col}
-    am_manager = am_df.set_index("team")["Manager"].to_dict()
 
     # Model
     model = so.Model(name=problem_name)
