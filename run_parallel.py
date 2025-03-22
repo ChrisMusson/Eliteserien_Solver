@@ -25,7 +25,7 @@ def run_script(command):
     try:
         subprocess.run(command, shell=True, check=True)
     except subprocess.CalledProcessError as e:
-        return f'Command "{command}" failed with exit code {e.returncode}.'
+        return f'Command "{command}" failed with exit code {e.returncode}.\n{e}\n\n'
 
 
 def run_parallel_solves(jobs, max_workers=8):
