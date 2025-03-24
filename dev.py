@@ -176,40 +176,6 @@ def prep_data(my_data, options):
     if options.get("export_data", "") != "" and datasource == "mixed":
         data.to_csv(f"data/{options['export_data']}")
 
-    # AM fix
-    am_data = data[data["Pos"] == "AM"].copy()
-    data = data[data["Pos"] != "AM"].copy()
-
-    if options.get("export_am_ev") and len(am_data) > 0:
-        manager_dict = {
-            "ARS": "Arteta",
-            "AVL": "Emery",
-            "BOU": "Iraola",
-            "BRE": "Frank",
-            "BHA": "Hurzeler",
-            "CHE": "Maresca",
-            "CRY": "Glasner",
-            "EVE": "Moyes",
-            "FUL": "Silva",
-            "IPS": "McKenna",
-            "LEI": "van Nistelrooy",
-            "LIV": "Slot",
-            "MCI": "Guardiola",
-            "MUN": "Amorim",
-            "NEW": "Howe",
-            "NFO": "Nuno",
-            "SOU": "Jurić",
-            "TOT": "Postecoglou",
-            "WHU": "Potter",
-            "WOL": "Pereira",
-        }
-        am_data["Manager"] = am_data["ID"].map(manager_dict)
-        am_data = am_data.rename(columns={"ID": "team", "BV": "Price"})
-        selected_columns = ["team", "Manager", "Price"] + [col for col in am_data.columns if "_Pts" in col]
-        am_data_final = am_data[selected_columns].copy()
-
-        am_data_final.to_csv("data/am_pts.csv")
-
     # Type fixes due to AM projections
     data["review_id"] = data["review_id"].astype(np.int64)
     for col in data.columns:
@@ -248,12 +214,7 @@ def prep_data(my_data, options):
     cutoff = merged_data["total_ev"].quantile((100 - options.get("keep_top_ev_percent", 10)) / 100)
     safe_players_due_ev = merged_data[(merged_data["total_ev"] > cutoff)]["review_id"].tolist()
 
-    initial_squad = [int(i["element"]) for i in my_data["picks"] if i["element_type"] != 5]
-    initial_am_team = None
-    if len(my_data["picks"]) == 16:
-        initial_am_id = [int(i["element"]) for i in my_data["picks"] if i["element_type"] == 5][0]
-        initial_am_element = [x for x in fpl_data["elements"] if x["id"] == initial_am_id][0]
-        initial_am_team = [x["short_name"] for x in fpl_data["teams"] if x["id"] == initial_am_element["team"]][0]
+    initial_squad = [int(i["element"]) for i in my_data["picks"]]
 
     safe_players = initial_squad + options.get("locked", []) + options.get("keep", []) + locked_next_gw + safe_players_due_price + safe_players_due_ev
 
@@ -330,7 +291,6 @@ def prep_data(my_data, options):
         "type_data": type_data,
         "next_gw": gw,
         "initial_squad": initial_squad,
-        "initial_am_team": initial_am_team,
         "sell_price": sell_price,
         "buy_price": buy_price,
         "price_modified_players": price_modified_players,
