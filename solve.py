@@ -197,7 +197,6 @@ def solve_regular(runtime_options=None):
     print("Result Summary")
     result_table = pd.DataFrame(response)
     result_table = result_table.sort_values(by="score", ascending=False)
-    print(result_table[["iter", "sell", "buy", "chip", "score"]].to_string(index=False))
 
     if len(options.get("report_decay_base", [])) > 0:
         try:
@@ -231,6 +230,8 @@ def solve_regular(runtime_options=None):
         solutions_file = options.get("solutions_file")
         if solutions_file:
             write_line_to_file(solutions_file, result, options)
+
+    print("\n", result_table[["iter", "sell", "buy", "chip", "score"]].to_string(index=False))
 
 
 def write_line_to_file(filename, result, options):
