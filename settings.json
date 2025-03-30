@@ -1,5 +1,4 @@
 {
-    "preseason": true,
     "decay_base": 0.9,
     "horizon": 6,
     "use_wc": null,
