@@ -956,7 +956,7 @@ def solve_multi_period_fpl(data, options):
     decay_metrics = {i: so.expr_sum(gw_total[w] * pow(i, w - next_gw) for w in gameweeks) for i in report_decay_base}
 
     iteration = options.get("iteration", 1)
-    iteration_criteria = options.get("iteration_criteria", "this_gw_transfer_in")
+    iteration_criteria = options.get("iteration_criteria", "this_gw_transfer_in_out")
     solutions = []
 
     for iter in range(iteration):
@@ -1272,7 +1272,7 @@ def solve_multi_period_fpl(data, options):
         cumulative_xpts = 0
 
         # collect statistics
-        statistics = {}
+        statistics = {next_gw - 1: {"itb": itb}}
 
         for w in gameweeks:
             summary_of_actions += f"** GW {w}:\n"
@@ -1322,6 +1322,7 @@ def solve_multi_period_fpl(data, options):
                 "xP": round(lineup_players["xp_cont"].sum(), 2),
                 "obj": round(gw_total[w].get_value(), 2),
                 "chip": chip_decision if chip_decision != "" else None,
+                "ft_state": so.expr_sum(s * free_transfers_state[w, s].get_value() for s in ft_states),
             }
 
         print("Cumulative xPts: " + str(round(cumulative_xpts, 2)) + "\n---\n\n")
