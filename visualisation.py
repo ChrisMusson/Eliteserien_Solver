@@ -10,6 +10,7 @@ VICE_CAPTAIN_COLOUR = "#c0c0c0"
 BOX_HEIGHT = 0.84
 BOX_WIDTH = 8
 PLAYER_SPACING = 1
+PLAYER_NAME_FONT_SIZE = 12
 GAMEWEEK_SPACING = 12
 POSITION_BORDER_WIDTH = 0.08
 CAPTAIN_BORDER_WIDTH = 0.15
@@ -154,11 +155,11 @@ def create_squad_timeline(current_squad, statistics, picks, filename):
             for cell in cells:
                 ax.add_patch(cell)
             text_pos = (gw_idx * GAMEWEEK_SPACING, y_pos + 0.15)
-            ax.text(*text_pos, player["name"], color=TEXT_COLOUR, ha="center", va="center", fontsize=8)
+            ax.text(*text_pos, player["name"], color=TEXT_COLOUR, ha="center", va="center", fontsize=PLAYER_NAME_FONT_SIZE)
 
             if week != base_week:
                 stats_text = f"{player['xP']:.1f} xPts : {int(player['xMin'])} xMin"
-                ax.text(gw_idx * GAMEWEEK_SPACING, y_pos - 0.15, stats_text, color=STATS_COLOUR, ha="center", va="center", fontsize=6)
+                ax.text(gw_idx * GAMEWEEK_SPACING, y_pos - 0.18, stats_text, color=STATS_COLOUR, ha="center", va="center", fontsize=8)
 
         # PLAYER CELLS BENCH
         for player_idx, player in bench.iterrows():
@@ -168,11 +169,10 @@ def create_squad_timeline(current_squad, statistics, picks, filename):
             for cell in cells:
                 ax.add_patch(cell)
             text_pos = (gw_idx * GAMEWEEK_SPACING, y_pos + 0.15)
-            ax.text(*text_pos, player["name"], color=TEXT_COLOUR, ha="center", va="center", fontsize=8)
+            ax.text(*text_pos, player["name"], color=TEXT_COLOUR, ha="center", va="center", fontsize=PLAYER_NAME_FONT_SIZE)
 
-            ax.text(gw_idx * GAMEWEEK_SPACING, y_pos + 0.15, player["name"], color=TEXT_COLOUR, ha="center", va="center", fontsize=8)
             stats_text = f"{player['xP']:.1f} xPts : {int(player['xMin'])} xMin"
-            ax.text(gw_idx * GAMEWEEK_SPACING, y_pos - 0.15, stats_text, color=STATS_COLOUR, ha="center", va="center", fontsize=6)
+            ax.text(gw_idx * GAMEWEEK_SPACING, y_pos - 0.18, stats_text, color=STATS_COLOUR, ha="center", va="center", fontsize=8)
 
         # TRANSFERS
         prev_week_int = int(display_weeks[gw_idx - 1])
