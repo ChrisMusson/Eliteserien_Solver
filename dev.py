@@ -1131,7 +1131,16 @@ def solve_multi_period_fpl(data, options):
                 f.write(f"""mip_rel_gap = {gap}""")
                 # mip_improving_solution_file="tmp/{problem_id}_incumbent.sol"
 
-            command = f"{highs_exec} --parallel on --options_file {opt_file_name} --random_seed {random_seed} --presolve {presolve} --model_file {mps_file_name} --time_limit {secs} --solution_file {sol_file_name}"
+            command = [
+                highs_exec,
+                "--parallel", "on",
+                "--options_file", opt_file_name,
+                "--random_seed", str(random_seed),
+                "--presolve", presolve,
+                "--model_file", mps_file_name,
+                "--time_limit", str(secs),
+                "--solution_file", sol_file_name,
+            ]
 
             if use_cmd:
                 # highs occasionally freezes in Windows, if it happens, try use_cmd value as False
