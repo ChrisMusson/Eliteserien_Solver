@@ -62,7 +62,7 @@ def generate_team_json(team_id, options):
 
         chips_url = f"{BASE_URL}/entry/{team_id}/history/"
         chips = session.get(chips_url).json()["chips"]
-        ru = [x for x in chips if x["name"] == "freehit"]
+        ru = [x for x in chips if x["name"] == "rich"]
         if ru:
             ru = ru[0]["event"]
         wc_gws = [x["event"] for x in chips if x["name"] == "wildcard"]
