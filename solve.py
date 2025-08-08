@@ -231,7 +231,9 @@ def solve_regular(runtime_options=None):
         if solutions_file:
             write_line_to_file(solutions_file, result, options)
 
-    print("\n", result_table[["iter", "sell", "buy", "chip", "score"]].to_string(index=False))
+    result_table = result_table[["iter", "sell", "buy", "chip", "score"]]
+    print("\n", result_table.to_string(index=False))
+    return result_table
 
 
 def write_line_to_file(filename, result, options):
