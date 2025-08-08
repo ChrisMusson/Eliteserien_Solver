@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # edit the gameweeks you want to have chips available in here.
     # in this example it means it will run solves for 10 chips combinations:
     # no chips, aa18, aa19, aa20, dk18, dk19, aa18dk19, aa19dk18, aa20dk18, aa20dk19
-    # note that this is the 3 bb options multiplied by the 4 fh options, minus the invalid combinations a18dk18 and aa19dk19
+    # note that this is the 3 dk options multiplied by the 4 aa options, minus the invalid combinations a18dk18 and aa19dk19
     chip_gameweeks = {
         "use_aa": [None, 18, 19, 20],
         "use_wc": [],
