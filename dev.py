@@ -10,6 +10,7 @@ from itertools import product
 from pathlib import Path
 from subprocess import Popen
 
+import highspy
 import numpy as np
 import requests
 import sasoptpy as so
@@ -978,55 +979,9 @@ def solve_multi_period_fpl(data, options):
                 file.write(model.to_optmodel())
 
         use_cmd = options.get("use_cmd", False)
-        solver = options.get("solver", "cbc")
+        solver = options.get("solver", "highs")
 
-        if solver == "cbc":
-            cbc_exec = options.get("solver_path") or "cbc"
-
-            if options.get("single_solve") is True:
-                gap = options.get("gap", 0)
-                secs = options.get("secs", 20 * 60)
-                command = f"{cbc_exec} {mps_file_name} cost column ratio {gap} sec {secs} solve solu {sol_file_name}"
-                if use_cmd:
-                    os.system(command)
-                else:
-                    process = Popen(command, shell=False)
-                    process.wait()
-
-            else:
-                command = f"{cbc_exec} {mps_file_name} cost column ratio 1 solve solu tmp/{problem_name}_{problem_id}_{iter}_sol_init.txt"
-                if use_cmd:
-                    os.system(command)
-                else:
-                    process = Popen(command, shell=False)
-                    process.wait()
-                secs = options.get("secs", 20 * 60)
-                command = f"{cbc_exec} {mps_file_name} mips tmp/{problem_name}_{problem_id}_{iter}_sol_init.txt cost column sec {secs} solve solu {sol_file_name}"
-                if use_cmd:
-                    os.system(command)
-                else:
-                    process = Popen(command, shell=False)  # add 'stdout=DEVNULL' for disabling logs
-                    process.wait()
-
-            # Popen fix with split?
-
-            t1 = time.time()
-            print(t1 - t0, "seconds passed")
-
-            # Parsing
-            with open(sol_file_name, "r") as f:
-                for v in model.get_variables():
-                    v.set_value(0)
-                for line in f:
-                    words = line.split()
-                    if words[0] == "Infeasible":
-                        raise ValueError("Infeasible problem instance, check your parameters")
-                    if "objective value" in line:
-                        continue
-                    var = model.get_variable(words[1])
-                    var.set_value(float(words[2]))
-
-        elif solver == "gurobi":
+        if solver == "gurobi":
             gap = options.get("gap", 0)
             sol_file_name = sol_file_name.replace("_sol", "").replace("txt", "sol")
             command = f"gurobi_cl MIPGap={gap} ResultFile={sol_file_name} {mps_file_name}"
@@ -1119,82 +1074,28 @@ def solve_multi_period_fpl(data, options):
                     except Exception:
                         print("Error", words[0], line)
 
-        elif solver == "highs":
-            highs_exec = options.get("solver_path") or "highs"
-
+        elif solver.lower() == "highs":
+            # Use highspy Python interface instead of command line
             secs = options.get("secs", 20 * 60)
             presolve = options.get("presolve", "on")
             gap = options.get("gap", 0)
             random_seed = options.get("random_seed", 0)
+            verbose = options.get("verbose", True)
 
-            with open(opt_file_name, "w") as f:
-                f.write(f"""mip_rel_gap = {gap}""")
-                # mip_improving_solution_file="tmp/{problem_id}_incumbent.sol"
+            solver_instance = highspy.Highs()
+            solver_instance.readModel(str(mps_file_name))
+            solver_instance.setOptionValue("parallel", "on")
+            solver_instance.setOptionValue("random_seed", random_seed)
+            solver_instance.setOptionValue("presolve", presolve)
+            solver_instance.setOptionValue("time_limit", secs)
+            solver_instance.setOptionValue("mip_rel_gap", gap)
+            solver_instance.setOptionValue("log_to_console", verbose)
 
-            command = [
-                highs_exec,
-                "--parallel", "on",
-                "--options_file", opt_file_name,
-                "--random_seed", str(random_seed),
-                "--presolve", presolve,
-                "--model_file", mps_file_name,
-                "--time_limit", str(secs),
-                "--solution_file", sol_file_name,
-            ]
-
-            if use_cmd:
-                # highs occasionally freezes in Windows, if it happens, try use_cmd value as False
-                # print('If you are using Windows, HiGHS occasionally freezes after solves are completed. Use \n\t"use_cmd": false\nin regular settings if it happens.')
-                os.system(command)
-            else:
-
-                def print_output(process):
-                    while True:
-                        try:
-                            output = process.stdout.readline()
-                            if "Solving report" in output:
-                                time.sleep(2)
-                                process.kill()
-                            elif output == "" and process.poll() is not None:
-                                break
-                            elif output:
-                                print(output.strip())
-                        except Exception:
-                            print("File closed")
-                            # traceback.print_exc()
-                            break
-                    process.kill()
-
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-                output_thread = threading.Thread(target=print_output, args=(process,))
-                output_thread.start()
-                output_thread.join()
-
-            # Parsing
-            with open(sol_file_name, "r") as f:
-                for v in model.get_variables():
-                    v.set_value(0)
-                cols_started = False
-                for line in f:
-                    if not cols_started and "# Columns" not in line:
-                        continue
-                    elif "# Columns" in line:
-                        cols_started = True
-                        continue
-                    elif cols_started and line[0] != "#":
-                        words = line.split()
-                        v = model.get_variable(words[0])
-                        try:
-                            if v.get_type() == so.INT:
-                                v.set_value(round(float(words[1])))
-                            elif v.get_type() == so.BIN:
-                                v.set_value(round(float(words[1])))
-                            elif v.get_type() == so.CONT:
-                                v.set_value(round(float(words[1]), 3))
-                        except Exception:
-                            print("Error", words[0], line)
-                    elif line[0] == "#":
-                        break
+            solver_instance.run()
+            solution = solver_instance.getSolution()
+            values = list(solution.col_value)
+            for idx, v in enumerate(model.get_variables()):
+                v.set_value(values[idx])
 
         # DataFrame generation
         picks = []
